@@ -33,12 +33,12 @@ app.get('/weather', searchWeather);
 
 // function to check DB for existing table
 const existsInDB = function(tableName, data) {
-  let queryString = `SELECT * FROM ${tableName} WHERE search_input=$1`; 
+  let queryString = `SELECT * FROM ${tableName} WHERE search_input=$1`;
 
   return client.query(queryString, [data])
-    .then(sqlResult => { 
-      return sqlResult.rowCount === 0 ? false : true; 
-    });    
+    .then(sqlResult => {
+      return sqlResult.rowCount === 0 ? false : true;
+    });
 };
 
 // Location db/api retrieval function
@@ -48,41 +48,41 @@ function searchToLatLng(request, response) {
   const tableName = 'locations';
 
   existsInDB(tableName, locationName).then( tableExists => {
-  console.log(tableExists);
-  
-  client.query(`SELECT * FROM locations WHERE search_input=$1`, [locationName])
-    .then(sqlResult => {
+    console.log(tableExists);
 
-      if(!tableExists) {
-        console.log('retrieving from google');
+    client.query(`SELECT * FROM locations WHERE search_input=$1`, [locationName])
+      .then(sqlResult => {
 
-        superagent.get(geocodeURL)
-          .then(result => {
+        if(!tableExists) {
+          console.log('retrieving from google');
 
-            let location = new LocationConstructor(result.body, locationName);
-            
-            client.query(
-              `INSERT INTO locations (
+          superagent.get(geocodeURL)
+            .then(result => {
+
+              let location = new LocationConstructor(result.body, locationName);
+
+              client.query(
+                `INSERT INTO locations (
                 search_input,
                 search_query, 
                 formatted_query,
                 latitude,
                 longitude
               ) VALUES ($1, $2, $3, $4, $5)`,
-              [location.search_input, location.search_query, location.formatted_query, location.latitude, location.longitude]
-            )
-    
-            response.send(location);
+                [location.search_input, location.search_query, location.formatted_query, location.latitude, location.longitude]
+              )
 
-          }).catch(error => {
-            console.error(error);
-            response.status(500).send('Status 500: Life is hard mang.');
-          })
-      } else{
-        console.log('sent from DB');
-        response.send(sqlResult.rows[0]);
-      }
-    });
+              response.send(location);
+
+            }).catch(error => {
+              console.error(error);
+              response.status(500).send('Status 500: Life is hard mang.');
+            })
+        } else{
+          console.log('sent from DB');
+          response.send(sqlResult.rows[0]);
+        }
+      });
   });
 
 }
@@ -104,46 +104,46 @@ function searchWeather(request, response) {
   const tableName = 'weather';
 
   existsInDB(tableName, locationName).then( tableExists => {
-  console.log(tableExists);
-  
-  client.query(`SELECT * FROM weather WHERE search_input=$1`, [locationName])
-    .then(sqlResult => {
+    console.log(tableExists);
 
-      if(!tableExists) {
-        console.log('retrieving from google');
+    client.query(`SELECT * FROM weather WHERE search_input=$1`, [locationName])
+      .then(sqlResult => {
 
-        superagent.get(darkskyURL)
-          .then(result => {
+        if(!tableExists) {
+          console.log('retrieving from darksky');
 
-            let weather = result.body.daily.data.map( element => new WeatherConstructor(element));
-            
-            client.query(
-              `INSERT INTO weather (
+          superagent.get(darkskyURL)
+            .then(result => {
+
+              let weather = result.body.daily.data.map( element => new WeatherConstructor(element));
+
+              client.query(
+                `INSERT INTO weather (
                 search_input,
                 forecast,
                 time
               ) VALUES ($1, $2, $3)`,
-              [weather.search_input, weather.forecast, weather.time]
-            )
-    
-            response.send(weather);
+                [weather.search_input, weather.forecast, weather.time]
+              )
 
-          }).catch(error => {
-            console.error(error);
-            response.status(500).send('Status 500: Life is hard mang.');
-          })
-      } else{
-        console.log('sent from DB');
-        response.send(sqlResult.rows[0]);
-      }
-    });
+              response.send(weather);
+
+            }).catch(error => {
+              console.error(error);
+              response.status(500).send('Status 500: Life is hard mang.');
+            })
+        } else{
+          console.log('sent from DB');
+          response.send(sqlResult.rows[0]);
+        }
+      });
   });
 
 }
 
 
 // function searchWeather(request, response) {
-  
+
 //   console.log(darkskyURL);
 //   superagent.get(darkskyURL)
 //     .then(result => {
@@ -155,7 +155,7 @@ function searchWeather(request, response) {
 //     })
 // }
 
-// 
+//
 
 // constructor function to build weather objects
 function WeatherConstructor(element, searchLocation) {
