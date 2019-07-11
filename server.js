@@ -76,7 +76,6 @@ function searchEventbrite(request,response){
   superagent.get(eventBriteURL)
     .then(result => {
       let eventData = result.body.events.map( event => new EventConstructor(event.url, event.name.text, event.start.local, event.summary));
-      // console.log(eventData);
       response.send(eventData);
     }).catch(error => {
       console.error(error);
@@ -89,10 +88,9 @@ function EventConstructor(link, name, event_date, summary){
   this.name = name;
   this.event_date = new Date(event_date).toDateString();
   this.summary = summary;
-
 }
 
-// error handling
+// Error handling
 app.use('*', (request, response) => {
   response.send('you got to the wrong place');
 })

@@ -14,18 +14,31 @@ The user should only have to open up the app on the internet and enter the name 
 
 ## Change Log
 
-07-09-2019 1000am - Initial repo scaffolding complete.
+07-09-2019 10:00am - Initial repo scaffolding complete.
 
-07-09-2019 1145am - Application now has a fully-functional express server, with a GET route for the location resource and will display map on page.
+07-09-2019 11:45am - Application now has a fully-functional express server, with a GET route for the location resource and will display map on page.
 
-07-09-2019 1300am - Application now has a fully-functional express server, with a GET route for the weather resource and will display map on page.
+07-09-2019 1pm - Application now has a fully-functional express server, with a GET route for the weather resource and will display map on page.
+
+07-10-2019 - Application now makes use of constructor functions to produce new events objects.
+
+07-10-2019 - Application now has a receives real-time data location from Google Geo Locations API.
+
+07-10-2019 - Application now has a receives real-time data location from Dark Sky API.
+
+07-10-2019 - Application now has a receives real-time data location from Eventbrite API.
+
+07-11-2019 9am - 
 
 ## Credits and Collaborations
 Day 1 Help Collaborators: Trevor Dobson and Marisha Hoza
 Day 1 Team Credits: Brandon Hurrington, Chris Coulon, Joachen Busch
 
-Day 2 Help Collaborators: 
+Day 2 Help Collaborators: Steve Grant
 Day 2 Team Credits: Brandon Hurrington, Renee Messick
+
+Day 3 Help Collaborators: 
+Day 3 Team Credits: Brandon Hurrington, Promila Tamang
 
 
 # Lab-06
@@ -103,7 +116,7 @@ Number and name of feature: Feature 1: data formatting
 
 Estimate of time needed to complete: 30 minutes
 
-Start time: 12:0pm
+Start time: 12pm
 
 Finish time: 12:10pm
 
@@ -113,11 +126,11 @@ Driver: Brandon
 Navigator: Renee
 
 # Lab-07
-Number and name of feature: Feature 2: weather formatting
+Number and name of feature: Feature 2: locations 
 
 Estimate of time needed to complete: 30 minutes
 
-Start time: 12:0pm
+Start time: 12pm
 
 Finish time: 12:10pm
 
@@ -125,3 +138,45 @@ Actual time needed to complete:  10 minutes
 
 Driver: Brandon
 Navigator: Renee
+
+# Lab-07
+Number and name of feature: Feature 3: weather 
+
+Estimate of time needed to complete: 30 minutes
+
+Start time: 12:10pm
+
+Finish time: 1:50pm
+
+Actual time needed to complete:  1 hour 40 minutes
+
+Driver: Brandon
+Navigator: Renee
+
+# Lab-07
+Number and name of feature: Feature 3: eventbrite 
+
+Estimate of time needed to complete: ??
+
+Start time: ??
+
+Finish time: ??
+
+Actual time needed to complete:  ?? minutes
+
+Driver: Renee
+Navigator: Renee
+
+# Lab-08
+Number and name of feature: Feature 3: ?? 
+
+Estimate of time needed to complete: ??
+
+Start time: ??
+
+Finish time: ??
+
+Actual time needed to complete:  ?? minutes
+
+Driver: Promila
+Navigator: Brandon
