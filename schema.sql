@@ -15,8 +15,9 @@ CREATE TABLE locations (
   longitude NUMERIC(10,7)
 );
 
-CREATE TABLE weathers ( 
+CREATE TABLE weather ( 
     id SERIAL PRIMARY KEY, 
+    search_input VARCHAR(225),
     forecast VARCHAR(255), 
     time VARCHAR(255), 
     location_id INTEGER NOT NULL,

@@ -28,38 +28,41 @@ app.use(cors());
 // Use express to get location data
 app.get('/location', searchToLatLng);
 
+// Use express to get weather data
+app.get('/weather', searchWeather);
+
 // function to check DB for existing table
 const existsInDB = function(tableName, data) {
-  let queryString = `SELECT * FROM ${tableName} WHERE search_input=$1`, 
+  let queryString = `SELECT * FROM ${tableName} WHERE search_input=$1`; 
 
-    return client.query(queryString, [data])
+  return client.query(queryString, [data])
     .then(sqlResult => { 
-      if (sqlResult.rowCount === 0) { return false; } else { return true; };
-    });
-  
+      return sqlResult.rowCount === 0 ? false : true; 
+    });    
 };
 
-// Performs task of building object from JSON file
+// Location db/api retrieval function
 function searchToLatLng(request, response) {
   const locationName = request.query.data;
   const geocodeURL = `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=${GEOCODE_API_KEY}`;
-  const tableName = locations;
+  const tableName = 'locations';
 
-  const tableExists = existsInDB(tableName, locationName);
+  existsInDB(tableName, locationName).then( tableExists => {
+  console.log(tableExists);
   
-  client.query(`SELECT * FROM locations WHERE search_query=$1`, [locationName])
+  client.query(`SELECT * FROM locations WHERE search_input=$1`, [locationName])
     .then(sqlResult => {
 
-      if(tableExists) {
+      if(!tableExists) {
         console.log('retrieving from google');
 
         superagent.get(geocodeURL)
           .then(result => {
 
-            let location = new LocationConstructor(result.body);
+            let location = new LocationConstructor(result.body, locationName);
             
             client.query(
-              `INSERT INTO locations(
+              `INSERT INTO locations (
                 search_input,
                 search_query, 
                 formatted_query,
@@ -77,39 +80,86 @@ function searchToLatLng(request, response) {
           })
       } else{
         console.log('sent from DB');
-        response.send(sqlResult.row[0]);
+        response.send(sqlResult.rows[0]);
       }
     });
+  });
 
 }
 
 // constructor function to build weather objects
-function LocationConstructor(geoData) {
+function LocationConstructor(geoData, searchLocation) {
+  this.search_input = searchLocation;
+  this.search_query = searchLocation;
   this.formatted_query = geoData.results[0].formatted_address;
   this.latitude = geoData.results[0].geometry.location.lat;
   this.longitude = geoData.results[0].geometry.location.lng;
 
 }
 
-
-// Use express to get weather data
-app.get('/weather', searchWeather);
-
+//
 function searchWeather(request, response) {
+  const locationName = request.query.data;
   const darkskyURL = `https://api.darksky.net/forecast/${DARKSKY_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`;
-  console.log(darkskyURL);
-  superagent.get(darkskyURL)
-    .then(result => {
-      let weather = result.body.daily.data.map( element => new WeatherConstructor(element));
-      response.send(weather);
-    }).catch(error => {
-      console.error(error);
-      response.status(500).send('Status 500: Life is hard mang.');
-    })
+  const tableName = 'weather';
+
+  existsInDB(tableName, locationName).then( tableExists => {
+  console.log(tableExists);
+  
+  client.query(`SELECT * FROM weather WHERE search_input=$1`, [locationName])
+    .then(sqlResult => {
+
+      if(!tableExists) {
+        console.log('retrieving from google');
+
+        superagent.get(darkskyURL)
+          .then(result => {
+
+            let weather = result.body.daily.data.map( element => new WeatherConstructor(element));
+            
+            client.query(
+              `INSERT INTO weather (
+                search_input,
+                forecast,
+                time
+              ) VALUES ($1, $2, $3)`,
+              [weather.search_input, weather.forecast, weather.time]
+            )
+    
+            response.send(weather);
+
+          }).catch(error => {
+            console.error(error);
+            response.status(500).send('Status 500: Life is hard mang.');
+          })
+      } else{
+        console.log('sent from DB');
+        response.send(sqlResult.rows[0]);
+      }
+    });
+  });
+
 }
 
+
+// function searchWeather(request, response) {
+  
+//   console.log(darkskyURL);
+//   superagent.get(darkskyURL)
+//     .then(result => {
+//       let weather = result.body.daily.data.map( element => new WeatherConstructor(element));
+//       response.send(weather);
+//     }).catch(error => {
+//       console.error(error);
+//       response.status(500).send('Status 500: Life is hard mang.');
+//     })
+// }
+
+// 
+
 // constructor function to build weather objects
-function WeatherConstructor(element) {
+function WeatherConstructor(element, searchLocation) {
+  this.search_input = searchLocation;
   this.forecast = element.summary,
   this.time = new Date(element.time * 1000).toDateString()
 }

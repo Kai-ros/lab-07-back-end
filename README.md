@@ -168,13 +168,27 @@ Driver: Renee
 Navigator: Renee
 
 # Lab-08
-Number and name of feature: Feature 3: ?? 
+Number and name of feature: Feature 1: Database Setup
 
-Estimate of time needed to complete: ??
+Estimate of time needed to complete: 0:30
 
-Start time: ??
+Start time: 9:30
 
-Finish time: ??
+Finish time: 10:00
+
+Actual time needed to complete:  30 minutes
+
+Driver: Promila
+Navigator: Brandon
+
+# Lab-08
+Number and name of feature: Feature 1: Server code workflow
+
+Estimate of time needed to complete: 1:00
+
+Start time: 10:30
+
+Finish time: 
 
 Actual time needed to complete:  ?? minutes
 
