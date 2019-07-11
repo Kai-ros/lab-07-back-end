@@ -1,4 +1,5 @@
-DROP TABLE IF EXISTS weathers;
+DROP TABLE IF EXISTS weather;
+DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS locations;
 
 -- this.search_query = locationName;
