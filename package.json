@@ -1,10 +1,11 @@
 {
   "name": "data",
   "version": "1.0.0",
-  "description": "",
+  "description": "**Author**: Brandon Hurrington, Chris Coulon, Joachen Busch **Version**: 1.0.0 (increment the patch/fix version number if you make more commits past your first submission)",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
@@ -14,5 +15,14 @@
     "express": "^4.17.1",
     "pg": "^7.11.0",
     "superagent": "^5.1.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/promilatam/lab-07-back-end.git"
+  },
+  "bugs": {
+    "url": "https://github.com/promilatam/lab-07-back-end/issues"
+  },
+  "homepage": "https://github.com/promilatam/lab-07-back-end#readme"
 }
