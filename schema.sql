@@ -2,11 +2,6 @@ DROP TABLE IF EXISTS weather;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS locations;
 
--- this.search_query = locationName;
--- this.formatted_query = result.body.results[0].formatted_address;
--- this.latitude = result.body.results[0].geometry.location.lat;
--- this.longitude = result.body.results[0].geometry.location.lng;
-
 CREATE TABLE locations (
   id SERIAL PRIMARY KEY,
   search_input VARCHAR(225),
@@ -17,10 +12,19 @@ CREATE TABLE locations (
 );
 
 CREATE TABLE weather ( 
-    id SERIAL PRIMARY KEY, 
-    search_input VARCHAR(225),
-    forecast VARCHAR(255), 
-    time VARCHAR(255), 
-    location_id INTEGER NOT NULL,
-    FOREIGN KEY (location_id) REFERENCES locations (id)
-  );
+  id SERIAL PRIMARY KEY, 
+  search_input VARCHAR(225),
+  forecast VARCHAR(255), 
+  time VARCHAR(255), 
+  location_id INTEGER NOT NULL,
+  FOREIGN KEY (location_id) REFERENCES locations (id)
+);
+
+CREATE TABLE events ( 
+  id SERIAL PRIMARY KEY, 
+  search_input VARCHAR(225),
+  link VARCHAR(255), 
+  name VARCHAR(255), 
+  event_date DATE NOT NULL,
+  summary VARCHAR(225)
+);

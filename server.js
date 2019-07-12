@@ -31,6 +31,19 @@ app.get('/location', searchToLatLng);
 // Use express to get weather data
 app.get('/weather', searchWeather);
 
+// Use express to get event data
+app.get('/events', searchEvents);
+
+// Error handling
+app.use('*', (request, response) => {
+  response.send('you got to the wrong place');
+})
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`app is up on port ${PORT}`)
+})
+
 // function to check DB for existing table
 const existsInDB = function(tableName, data) {
   let queryString = `SELECT * FROM ${tableName} WHERE search_input=$1`;
@@ -41,7 +54,7 @@ const existsInDB = function(tableName, data) {
     });
 };
 
-// Location db/api retrieval function
+// Location DB || API retrieval function
 function searchToLatLng(request, response) {
   const locationName = request.query.data;
   const geocodeURL = `https://maps.googleapis.com/maps/api/geocode/json?address=${locationName}&key=${GEOCODE_API_KEY}`;
@@ -79,7 +92,7 @@ function searchToLatLng(request, response) {
               response.status(500).send('Status 500: Life is hard mang.');
             })
         } else{
-          console.log('sent from DB');
+          console.log('sent from locations DB');
           response.send(sqlResult.rows[0]);
         }
       });
@@ -87,16 +100,8 @@ function searchToLatLng(request, response) {
 
 }
 
-// constructor function to build weather objects
-function LocationConstructor(geoData, searchLocation) {
-  this.search_input = searchLocation;
-  this.search_query = searchLocation;
-  this.formatted_query = geoData.results[0].formatted_address;
-  this.latitude = geoData.results[0].geometry.location.lat;
-  this.longitude = geoData.results[0].geometry.location.lng;
-}
 
-//
+// Weather DB || API retrieval function
 function searchWeather(request, response) {
   const locationName = request.query.data;
   const darkskyURL = `https://api.darksky.net/forecast/${DARKSKY_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`;
@@ -114,7 +119,7 @@ function searchWeather(request, response) {
           superagent.get(darkskyURL)
             .then(result => {
 
-              let weather = result.body.daily.data.map( element => new WeatherConstructor(element));
+              let weather = result.body.daily.data.map( element => new WeatherConstructor(element, locationName));
 
               client.query(
                 `INSERT INTO weather (
@@ -132,66 +137,82 @@ function searchWeather(request, response) {
               response.status(500).send('Status 500: Life is hard mang.');
             })
         } else{
-          console.log('sent from DB');
+          console.log('sent from weather DB');
           response.send(sqlResult.rows[0]);
         }
       });
   });
 }
 
+// Weather DB || API retrieval function
+function searchEvents(request, response) {
+  const locationName = request.query.data;
+  const eventBriteURL = `https://www.eventbriteapi.com/v3/events/search/?location.longitude=${request.query.data.longitude}&location.latitude=${request.query.data.latitude}&expand=venue&token=${EVENTBRITE_API_KEY}`;
+  const tableName = 'events';
 
-// function searchWeather(request, response) {
+  existsInDB(tableName, locationName).then( tableExists => {
+    console.log(tableExists);
 
-//   console.log(darkskyURL);
-//   superagent.get(darkskyURL)
-//     .then(result => {
-//       let weather = result.body.daily.data.map( element => new WeatherConstructor(element));
-//       response.send(weather);
-//     }).catch(error => {
-//       console.error(error);
-//       response.status(500).send('Status 500: Life is hard mang.');
-//     })
-// }
+    client.query(`SELECT * FROM events WHERE search_input=$1`, [locationName])
+      .then(sqlResult => {
 
-//
+        if(!tableExists) {
+          console.log('retrieving from eventbrite');
+
+          superagent.get(eventBriteURL)
+            .then(result => {
+
+              let event = result.body.events.map( event => new EventConstructor(event.url, event.name.text, event.start.local, event.summary, locationName));
+
+              client.query(
+                `INSERT INTO events (
+                search_input,
+                link,
+                name,
+                event_date,
+                summary
+              ) VALUES ($1, $2, $3, $4, $5)`,
+                [event.search_input, event.url, event.name.text, event.start.local, event.summary]
+              )
+
+              response.send(event);
+
+            }).catch(error => {
+              console.error(error);
+              response.status(500).send('Status 500: Life is hard mang.');
+            })
+        } else{
+          console.log('sent from events DB');
+          response.send(sqlResult.rows[0]);
+        }
+      });
+  });
+}
 
 // constructor function to build weather objects
+function LocationConstructor(geoData, searchLocation) {
+  this.search_input = searchLocation;
+  this.search_query = searchLocation;
+  this.formatted_query = geoData.results[0].formatted_address;
+  this.latitude = geoData.results[0].geometry.location.lat;
+  this.longitude = geoData.results[0].geometry.location.lng;
+}
+
+// Constructor to use location data to build weather objects
 function WeatherConstructor(element, searchLocation) {
   this.search_input = searchLocation;
   this.forecast = element.summary,
   this.time = new Date(element.time * 1000).toDateString()
 }
 
-//Search Eventbrite
 
-app.get('/events',searchEventbrite);
-
-function searchEventbrite(request,response){
-  const eventBriteURL = `https://www.eventbriteapi.com/v3/events/search/?location.longitude=${request.query.data.longitude}&location.latitude=${request.query.data.latitude}&expand=venue&token=${EVENTBRITE_API_KEY}`;
-
-  superagent.get(eventBriteURL)
-    .then(result => {
-      let eventData = result.body.events.map( event => new EventConstructor(event.url, event.name.text, event.start.local, event.summary));
-      response.send(eventData);
-    }).catch(error => {
-      console.error(error);
-      response.status(500).send('Status 500: Sadly, Events are not working');
-    });
-}
-
-function EventConstructor(link, name, event_date, summary){
+// Constructor to use location data to build event objects
+function EventConstructor(link, name, event_date, summary, searchLocation){
+  this.search_input = searchLocation;
   this.link = link;
   this.name = name;
   this.event_date = new Date(event_date).toDateString();
   this.summary = summary;
 }
 
-// Error handling
-app.use('*', (request, response) => {
-  response.send('you got to the wrong place');
-})
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`app is up on port ${PORT}`)
-})
